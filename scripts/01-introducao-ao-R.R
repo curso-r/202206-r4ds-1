@@ -19,13 +19,13 @@
 
 # Objetos -----------------------------------------------------------------
 
-# As bases de dados serão o nosso objeto de trabalho 
+# As bases de dados serão o nosso objeto de trabalho
 mtcars
 
 # O objeto mtcars já vem com a instalação do R
 # Ele está sempre disponível
 
-# Outros exemplos 
+# Outros exemplos
 pi
 letters
 LETTERS
@@ -38,8 +38,8 @@ LETTERS
 # Funções são nomes que guardam um código de R. Esse código é
 # avaliado quando rodamos uma função.
 
-nrow(mtcars)
-ncol(mtcars)
+nrow(mtcars) # número de linhas  - row sempre é linha
+ncol(mtcars) # número de colunas  - col sempre é coluna
 
 # Podemos usar a função help para ver
 # a documentação de um objeto ou função
@@ -59,12 +59,17 @@ sum(2, 3, 4)
 
 read.csv("dados/imdb.csv")
 
+# comma separated value - arquivo de texto, valores separados por vírgula
+
 # Como "salvar" a base dentro do R?
 
 # Criando objetos ---------------------------------------------------------
 
-# No dia-a-dia, a gente vai precisar criar os 
+# No dia-a-dia, a gente vai precisar criar os
 # nossos próprios objetos
+
+# <- se chama atribuição
+
 
 # Salvando o valor 1 no objeto "obj"
 obj <- 1
@@ -79,7 +84,9 @@ soma
 # Em geral, começaremos a nossa análise com:
 nossa_base <- funcao_que_carrega_uma_base("caminho/ate/arquivo")
 
-# O erro "could not find function" significa que 
+# "dados/por_ano/imdb_1929.rds"
+
+# O erro "could not find function" significa que
 # você pediu para o R avaliar uma função que
 # não existe. O mesmo vale para objetos:
 
@@ -92,12 +99,18 @@ nossa_base
 # No nosso caso:
 imdb <- read.csv("dados/imdb.csv")
 
+library(dplyr)
+
+
+# imdb_recentes <- # filtrando filmes recentes
+
 # salvar saída versus apenas executar
 33 / 11
 resultado <- 33 / 11
 
 # atualizar um objeto
 resultado <- resultado * 5
+
 
 # A nossa base imdb só será alterada quando salvarmos
 # uma operação em cima do objeto imdb
@@ -118,23 +131,37 @@ meu.objeto <- 5
 
 # Não permitido
 
-1x <- 1
-_objeto <- 2
-meu-objeto <- 3
+# 1x <- 1
+# _objeto <- 2
+# meu-objeto <- 3
 
 # Estilo de nomes
 
 eu_uso_snake_case
-outrasPessoasUsamCamelCase
+outrasPessoasUsamCamelCase # shiny
 algumas.pessoas.usam.pontos.mas.nao.deviam
 E_algumasPoucas.Pessoas_RENUNCIAMconvenções
+
+# evitem usar acentos nos nomes dos objetos, arquivos, pastas
+# use o estilo que vc gostar, mas seja consistente!
+
+
 
 
 # checkpoint --------------------------------------------------------------
 
-# 1. Escrevam (não copiem e colem) o código que lê a base e 
-# a salva num objeto imdb. Rodem o código e observem 
+
+# 0. apague tudo do environment com a vassoura!
+
+# 1. Escrevam (não copiem e colem) o código que lê a base e
+# a salva num objeto imdb. Rodem o código e observem
 # na aba environment se o objeto imdb apareceu.
+
+
+# dúvidas
+View(head(mtcars))
+
+
 
 # Classes -----------------------------------------------------------------
 
@@ -245,7 +272,7 @@ class(vetor)
 as.numeric(c(TRUE, FALSE, FALSE))
 as.character(c(TRUE, FALSE, FALSE))
 
-# Por consquência, cada coluna de uma base 
+# Por consquência, cada coluna de uma base
 # guarda valores de apenas uma classe.
 
 # Naturalmente, podemos fazer operações matemáticas com vetores
