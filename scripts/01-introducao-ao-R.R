@@ -19,13 +19,13 @@
 
 # Objetos -----------------------------------------------------------------
 
-# As bases de dados serão o nosso objeto de trabalho
+# As bases de dados serão o nosso objeto de trabalho 
 mtcars
 
 # O objeto mtcars já vem com a instalação do R
 # Ele está sempre disponível
 
-# Outros exemplos
+# Outros exemplos 
 pi
 letters
 LETTERS
@@ -65,7 +65,7 @@ read.csv("dados/imdb.csv")
 
 # Criando objetos ---------------------------------------------------------
 
-# No dia-a-dia, a gente vai precisar criar os
+# No dia-a-dia, a gente vai precisar criar os 
 # nossos próprios objetos
 
 # <- se chama atribuição
@@ -86,7 +86,7 @@ nossa_base <- funcao_que_carrega_uma_base("caminho/ate/arquivo")
 
 # "dados/por_ano/imdb_1929.rds"
 
-# O erro "could not find function" significa que
+# O erro "could not find function" significa que 
 # você pediu para o R avaliar uma função que
 # não existe. O mesmo vale para objetos:
 
@@ -98,8 +98,6 @@ nossa_base
 
 # No nosso caso:
 imdb <- read.csv("dados/imdb.csv")
-
-library(dplyr)
 
 
 # imdb_recentes <- # filtrando filmes recentes
@@ -131,7 +129,7 @@ meu.objeto <- 5
 
 # Não permitido
 
-# 1x <- 1
+# 1x <- 1 
 # _objeto <- 2
 # meu-objeto <- 3
 
@@ -153,17 +151,18 @@ E_algumasPoucas.Pessoas_RENUNCIAMconvenções
 
 # 0. apague tudo do environment com a vassoura!
 
-# 1. Escrevam (não copiem e colem) o código que lê a base e
-# a salva num objeto imdb. Rodem o código e observem
+# 1. Escrevam (não copiem e colem) o código que lê a base e 
+# a salva num objeto imdb. Rodem o código e observem 
 # na aba environment se o objeto imdb apareceu.
 
 
-# dúvidas
-View(head(mtcars))
-
-
+imdb <-  read.csv("dados/imdb.csv")
 
 # Classes -----------------------------------------------------------------
+
+# as colunas das tabelas são como vetores!
+imdb$titulo
+
 
 imdb
 
@@ -193,6 +192,8 @@ a
 a <- 10
 class(a)
 
+# Integer - número inteiro 
+
 # Caracteres (character, strings)
 
 obj <- "a"
@@ -214,12 +215,22 @@ class(falso)
 class(mtcars)
 class(imdb)
 
-# Como vemos a classe de uma coluna?
+
 # Como acessar as colunas de uma base?
+imdb$data_lancamento
+
+# Como vemos a classe de uma coluna?
+
+class(imdb$data_lancamento)
 
 # Vetores -----------------------------------------------------------------
 
-# Vetores são conjuntos de valores
+letters
+
+imdb$nota_imdb
+
+
+# Vetores são conjuntos de valores: use a função c()
 
 vetor1 <- c(1, 4, 3, 10)
 vetor2 <- c("a", "b", "z")
@@ -249,6 +260,8 @@ class(imdb$titulo)
 # O operador $ pode ser utilizado para selecionar
 # uma coluna da base
 
+# ----
+
 # Um vetor só pode guardar um tipo de objeto e ele terá sempre
 # a mesma classe dos objetos que guarda
 
@@ -268,11 +281,15 @@ class(vetor)
 
 # character > numeric > integer > logical
 
+TRUE + TRUE # TRUE É ENTENDIDO COMO 1
+FALSE # FALSE É ENTENDIDO COMO 0
+
 # coerções forçadas por você
 as.numeric(c(TRUE, FALSE, FALSE))
+
 as.character(c(TRUE, FALSE, FALSE))
 
-# Por consquência, cada coluna de uma base
+# Por consquência, cada coluna de uma base 
 # guarda valores de apenas uma classe.
 
 # Naturalmente, podemos fazer operações matemáticas com vetores
@@ -291,14 +308,89 @@ vetor2 <- c(10, 20, 30)
 
 vetor1  + vetor2
 
+
+# EXEMPLO - com múltiplos
+
+vetor3 <- c(1, 2, 3, 4, 5, 6)
+vetor4 <- c(10, 20, 30)
+
+vetor3 + vetor4
+
+
+# Exemplo quando o comprimento dos vetores não é múltiplo
+vetor5 <- c(1, 2, 3, 4, 5, 6, 7)
+vetor6 <- c(10, 20, 30)
+
+vetor5 + vetor6
+
+# Warning message:
+#   In vetor5 + vetor6 :
+#   longer object length is not a multiple of shorter object length
+
+
 # Pacotes -----------------------------------------------------------------
 
 # Para instalar pacotes
 
-install.packages("tidyverse")
+# install.packages("tidyverse")
 library(tidyverse)
+
+install.packages("dplyr")
+
+
+install.packages("remotes")
+remotes::install_github("tidyverse/dplyr")
+
+# ── Attaching packages ──────────────────────────────────────── tidyverse 1.3.1 ──
+# ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+# ✔ tibble  3.1.7     ✔ dplyr   1.0.9
+# ✔ tidyr   1.2.0     ✔ stringr 1.4.0
+# ✔ readr   2.1.2     ✔ forcats 0.5.1
+# ── Conflicts ─────────────────────────────────────────── tidyverse_conflicts() ──
+# ✖ dplyr::filter() masks stats::filter()
+# ✖ dplyr::lag()    masks stats::lag()
+# >
+
+
 library(dplyr)
 
 # Também é possível acessar as funções usando ::
 dplyr::filter_at()
 dplyr::transmute()
+
+
+# Mostrar o glimpse!
+
+library(dplyr)
+imdb <- read.csv("dados/imdb.csv")
+
+glimpse(imdb)
+
+
+dplyr::glimpse(imdb)
+
+glimpse(mtcars)
+
+# > glimpse(imdb)
+# Rows: 28,490
+# Columns: 20
+# $ id_filme             <chr> "tt0023352", "tt0037946", "tt0216204", "tt0171889", "tt0…
+# $ titulo               <chr> "Prestige", "Nob Hill", "The Shade", "Viewer Discretion …
+# $ ano                  <int> 1931, 1945, 1999, 1998, 1987, 1945, 1949, 1956, 2014, 20…
+# $ data_lancamento      <chr> "1932-01-22", "1945-11-15", "2000-03-01", "2012-05-01", …
+# $ generos              <chr> "Adventure, Drama", "Drama, Musical", "Drama", "Comedy, …
+# $ duracao              <int> 71, 95, 83, 105, 133, 91, 81, 98, 50, 85, 267, 116, 98, …
+# $ pais                 <chr> "USA", "USA", "USA", "USA", "USA", "USA", "USA", "USA", …
+# $ idioma               <chr> "English", "English", "English", "English", "English, Sp…
+# $ orcamento            <int> NA, NA, 400000, NA, 20000000, NA, NA, 1505000, 500, 1000…
+# $ receita              <dbl> NA, NA, NA, NA, 67331309, NA, NA, NA, NA, NA, NA, 149270…
+# $ receita_eua          <int> NA, NA, NA, NA, 51249404, NA, NA, NA, NA, NA, NA, 905709…
+# $ nota_imdb            <dbl> 5.7, 6.3, 7.1, 3.4, 7.2, 7.1, 6.3, 7.0, 5.7, 3.1, 7.0, 6…
+# $ num_avaliacoes       <int> 240, 246, 102, 111, 26257, 1639, 310, 162, 115, 197, 201…
+# $ direcao              <chr> "Tay Garnett", "Henry Hathaway", "Raphaël Nadjari", "Edd…
+# $ roteiro              <chr> "Harry Hervey, Tay Garnett", "Wanda Tuchock, Norman Reil…
+# $ producao             <chr> "RKO Pathé Pictures", "Twentieth Century Fox", "Filmaker…
+# $ elenco               <chr> "Ann Harding, Adolphe Menjou, Melvyn Douglas, Ian Maclar…
+# $ descricao            <chr> "A woman travels to a French penal colony in Indo China …
+# $ num_criticas_publico <int> 12, 11, 1, 5, 142, 35, 8, 9, 4, 12, 4, 502, 6, 35, 17, N…
+# $ num_criticas_critica <int> 2, 2, 1, 3, 62, 10, 5, NA, 5, 7, 7, 161, 1, 18, 8, 5, 15…
