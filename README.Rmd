@@ -5,7 +5,7 @@ params:
   trilha_clean: programacao_para_ciencia_de_dados
   turma: 202206-r4ds-1
   nome_curso: R para Ciência de Dados I
-  num_aula: '1'
+  num_aula: '2'
   download_material: 'TRUE'
 ---
 
@@ -82,18 +82,38 @@ knitr::kable(
   tibble::tibble(
     script = CursoRopen:::list_github_files(params$main_repo, pasta, ".R$"),
     link = paste0(
-      "https://github.com/curso-r/",
+      "https://raw.githubusercontent.com/curso-r/",
       params$turma,
-      "/blob/master/",
+      "/main/",
       script
     )
   ) %>%
     dplyr::mutate(script = glue::glue("[{script}]({link})")) %>%
-     dplyr::slice(1) %>% 
+     dplyr::slice(1:2) %>% 
     dplyr::select(script)
 )
 ```
 
+
+## Práticas feitas em aula
+
+```{r}
+pasta <- "pratica"
+
+knitr::kable(
+  tibble::tibble(
+    script = list.files(pasta),
+    link = paste0(
+      "https://raw.githubusercontent.com/curso-r/",
+      params$turma,
+      "/main/", pasta, "/", 
+      script
+    )
+  ) %>%
+    dplyr::mutate(script = glue::glue("[{script}]({link})")) %>%
+    dplyr::select(script)
+)
+```
 
 ```{r echo=FALSE, message=FALSE}
 library(magrittr, include.only = "%>%")
