@@ -1,3 +1,4 @@
+options(scipen=999)
 # Pacotes -----------------------------------------------------------------
 
 library(tidyverse)
@@ -10,7 +11,8 @@ imdb <- read_rds("dados/imdb.rds")
 
 glimpse(imdb)
 names(imdb)
-View(imdb)
+View(imdb) # não usar com bases muito grandes!
+head(imdb)
 
 # dplyr: 6 verbos principais
 # select()    # seleciona colunas do data.frame
@@ -26,6 +28,8 @@ View(imdb)
 
 select(imdb, titulo)
 
+titulo_imdb <- select(imdb, titulo)
+
 # A operação NÃO MODIFICA O OBJETO imdb
 
 imdb
@@ -34,12 +38,17 @@ imdb
 
 select(imdb, titulo, ano, orcamento)
 
+1:10
+
 select(imdb, titulo:generos)
 
 # Funções auxiliares
 
 select(imdb, starts_with("num"))
+
 select(imdb, contains("cri"))
+
+select(imdb, ends_with("cao"))
 
 # Principais funções auxiliares
 
@@ -47,33 +56,87 @@ select(imdb, contains("cri"))
 # ends_with(): para colunas que terminam com um texto padrão
 # contains():  para colunas que contêm um texto padrão
 
+
+# mudando o nome da coluna do select
+imdb_com_nome_filme <- select(imdb, nome_do_filme = titulo)
+
 # Selecionando colunas por exclusão
 
 select(imdb, -titulo)
 
 select(imdb, -starts_with("num"), -titulo, -ends_with("ao"))
 
+# duvida
+# E pode mudar o nome de mais de uma coluna ao mesmo tempo?
+
+select(imdb, nome_do_filme = titulo, estudio = producao)
+
+# pode juntar a regra da mudança do nome com a seleçao de outras colunas?
+
+select(imdb, nome_do_filme = titulo, estudio = producao, starts_with("receita"))
+
+# tudo!
+
+exemplo_tudo <- select(imdb, nome_do_filme = titulo, nota = nota_imdb, everything())
+
 # arrange -----------------------------------------------------------------
 
 # Ordenando linhas de forma crescente de acordo com 
 # os valores de uma coluna
 
-arrange(imdb, orcamento)
+View(arrange(imdb, orcamento))
 
 # Agora de forma decrescente
 
-arrange(imdb, desc(orcamento))
+View(arrange(imdb, desc(orcamento)))
 
 # Ordenando de acordo com os valores 
 # de duas colunas
+
+
+# CUIDADO QUE A ORDEM IMPORTA!
+View(arrange(imdb, desc(ano), desc(orcamento)))
+
+# O codigo abaixo tem um resultado diferente do código acima!
+View(arrange(imdb, desc(orcamento), desc(ano)))
 
 arrange(imdb, desc(ano), orcamento)
 
 # O que acontece com o NA?
 
+# sempre fica no final!
+
 df <- tibble(x = c(NA, 2, 1), y = c(1, 2, 3))
 arrange(df, x)
 arrange(df, desc(x))
+
+
+
+# duvida:
+# posso usar arrange e select junto?
+arrange(select(imdb, titulo, ano, nota_imdb, num_avaliacoes),
+        desc(nota_imdb))
+
+# imdb
+# select(........)
+# arrange(.....)
+
+# pipe nativo - Atalho: CTRL SHIFT M 
+imdb |> 
+  select(titulo, ano, nota_imdb, num_avaliacoes) |> 
+  arrange(desc(nota_imdb))
+
+# pipe do tidyverse - Atalho: CTRL SHIFT M 
+imdb %>% 
+  select(titulo, ano, nota_imdb, num_avaliacoes) %>% 
+  arrange(desc(nota_imdb))
+
+
+# pego a base
+# filtro os filmes com mais de 10 mil avaliacoes
+# ordeno por nota do imdb
+# pego as 10 primeiras linhas da base
+
 
 # Pipe (%>%) --------------------------------------------------------------
 
@@ -139,8 +202,12 @@ imdb %>%
 unique(imdb$direcao)
 
 
+imdb %>% 
+  distinct(producao)
 
-# Aqui falaremos de Conceitos importantes para filtros, seguindo de exemplos!
+
+# Aqui falaremos de Conceitos importantes para filtros,
+# seguindo de exemplos!
 
 ## Comparações lógicas -------------------------------
 
@@ -159,6 +226,8 @@ x == 2
 # Filtrando uma coluna da base: O que for TRUE (verdadeiro)
 # será mantido!
 
+filter(imdb, direcao == "Quentin Tarantino")
+
 imdb %>% 
   filter(direcao == "Quentin Tarantino") %>%
   View()
@@ -169,6 +238,8 @@ imdb %>%
   View()
 
 
+imdb %>% 
+  filter(direcao == "Quentin Tarantino")
 
 
 ## Comparações lógicas -------------------------------
@@ -182,6 +253,8 @@ x < 0
 
 
 x > 1
+
+
 x >= 1 # # Maior ou igual
 x < 1
 x <= 1 # menor ou igual
@@ -189,15 +262,33 @@ x <= 1 # menor ou igual
 # Exemplo com filtros!
 
 ## Recentes e com nota alta
+
+imdb_soh_notao <- imdb %>% filter(nota_imdb >= 9, num_avaliacoes > 10000) 
+
 imdb %>% filter(nota_imdb > 9, num_avaliacoes > 10000)
-imdb %>% filter(ano > 2010, nota_imdb > 8.5)
-imdb %>% filter(ano > 2010 & nota_imdb > 8.5)
+imdb %>% filter(ano > 2010, nota_imdb > 8.5) %>% View()
+
 
 ## Gastaram menos de 100 mil, faturaram mais de 1 milhão
-imdb %>% filter(orcamento < 100000, receita > 1000000)
+imdb %>% filter(orcamento < 100000, receita > 1000000) %>% View()
 
 ## Lucraram
-imdb %>% filter(receita - orcamento > 0)
+imdb %>% filter(receita - orcamento > 0) %>% View()
+
+View() # r base - salva como nulo!
+
+
+imdb_soh_notao <- imdb %>% 
+  filter(nota_imdb >= 9, num_avaliacoes > 10000) %>% 
+  View()
+
+
+view() # do tidyverse
+
+
+imdb_soh_notao <- imdb %>% 
+  filter(nota_imdb >= 9, num_avaliacoes > 10000) %>% 
+  view()
 
 
 ## Comparações lógicas -------------------------------
@@ -210,6 +301,9 @@ imdb %>%
   filter(direcao != "Quentin Tarantino") %>% 
   View()
 
+
+imdb_sem_tarantino <- imdb %>% filter(direcao != "Quentin Tarantino")
+
 ## Comparações lógicas -------------------------------
 
 # operador %in%
@@ -219,11 +313,14 @@ x %in% c(2, 3, 4)
 # Exemplo com filtros!
 
 
+
 # O operador %in%
 
 
 
-imdb %>% filter(direcao %in% c('Matt Reeves', "Christopher Nolan"))
+imdb %>% filter(direcao %in% c('Matt Reeves',
+                               "Christopher Nolan",
+                               "Quentin Tarantino")) %>% View()
 
 
 imdb %>%
@@ -235,9 +332,9 @@ imdb %>%
       "Steven Spielberg",
       "Francis Ford Coppola"
     )
-  )
+  ) %>% View()
 
-
+# INTERVALO! -----
 
 ## Operadores lógicos -------------------------------
 ## operadores lógicos - &, | , !
