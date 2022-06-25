@@ -334,7 +334,7 @@ imdb %>%
     )
   ) %>% View()
 
-# INTERVALO! -----
+# INTERVALO! ----- Continuar a aula 4 aqui :)
 
 ## Operadores lógicos -------------------------------
 ## operadores lógicos - &, | , !
@@ -351,8 +351,18 @@ x >= 3 & x <= 7
 x >= 3 & x <= 4
 
 # no filter, a virgula funciona como o &!
-imdb %>%  filter(ano > 2010, nota_imdb > 8.5) %>% View()
-imdb %>%  filter(ano > 2010 & nota_imdb > 8.5)
+
+imdb %>% 
+  filter(ano > 2010 & nota_imdb > 8.5) %>% 
+  View()
+
+imdb %>% 
+  filter(ano > 2010, nota_imdb > 8.5) %>% 
+  View()
+
+
+imdb %>% 
+  filter(ano > 2010 & nota_imdb > 8.5)
 
 
 ## Operadores lógicos -------------------------------
@@ -361,7 +371,6 @@ imdb %>%  filter(ano > 2010 & nota_imdb > 8.5)
 # lados precisa ser verdadeiro
 
 # operador |
-
 
 y <- 2
 y >= 3
@@ -374,10 +383,14 @@ y >= 3 | y <= 0
 # Exemplo com filter
 
 ## Lucraram mais de 500 milhões OU têm nota muito alta
-imdb %>% filter(receita - orcamento > 500000000 | nota_imdb > 9)
+imdb %>% 
+  filter(receita - orcamento > 500000000 | nota_imdb > 9) %>%
+  View()
 
 # O que esse quer dizer?
-imdb %>% filter(ano > 2010 | nota_imdb > 8.5) %>% View()
+imdb %>%
+  filter(ano > 2010 | nota_imdb > 8.5) %>%
+  View()
 
 ## Operadores lógicos -------------------------------
 
@@ -401,7 +414,7 @@ imdb %>%
   )) %>%
   View()
 
-
+# --- NAs
 
 # exemplo com NA
 is.na(imdb$orcamento)
@@ -418,7 +431,14 @@ filter(df, x > 1)
 # manter os NAs!
 filter(df, x > 1 | is.na(x))
 
+
+imdb %>% 
+  filter(orcamento > 50000) %>% View()
+
 # filtrar textos sem correspondência exata
+
+
+
 
 textos <- c("a", "aa", "abc", "bc", "A", NA)
 textos
@@ -439,7 +459,11 @@ str_detect(
 
 ## Pegando apenas os filmes que 
 ## tenham o gênero ação
-imdb %>% filter(str_detect(generos, "Action")) 
+imdb %>% filter(str_detect(generos, "Action")) %>% View()
+
+
+imdb %>%
+ filter(str_detect(elenco,  "Brie Larson")) %>% View()
 
 
 # filtra generos que contenha filmes que tenha "Crime" no texto
@@ -448,11 +472,15 @@ imdb %>%
   View()
 
 # filtra generos que seja IGUAL e APENAS "Crime"
-imdb %>% filter(generos == "Crime")
+imdb %>% filter(generos == "Crime") %>% View()
 
+# OU
+imdb %>% filter(str_detect(elenco, "Brie Larson|Joseph Gordon-Levitt"))
 
-
-
+# E
+imdb %>% filter(str_detect(elenco, "Brie Larson"),
+                str_detect(elenco, "Joseph Gordon-Levitt")) %>%
+  View()
 
 
 # mutate ------------------------------------------------------------------
@@ -471,16 +499,41 @@ imdb %>%
 
 imdb %>% 
   mutate(lucro = receita - orcamento) %>% 
+  select(titulo, receita, orcamento, lucro) %>% 
   View()
 
 # A função ifelse é uma ótima ferramenta
 # para fazermos classificação binária
 
-imdb %>% mutate(
+imdb %>% 
+  mutate(
   lucro = receita - orcamento,
   houve_lucro = ifelse(lucro > 0, "Sim", "Não")
 ) %>% 
   View()
+
+# classificacao com mais de 2 categorias - usar case_when
+imdb %>%
+  mutate(
+    categoria_nota = case_when(
+      nota_imdb >= 8 ~ "Alta",
+      nota_imdb < 8 & nota_imdb >= 5 ~ "Média",
+      nota_imdb < 5 ~ "Baixa",
+      TRUE ~ "Não classificado"
+    )
+  ) %>% View()
+
+
+imdb %>%
+  mutate(
+    categoria_nota = case_when(
+      nota_imdb >= 8 ~ 1,
+      nota_imdb < 8 & nota_imdb >= 5 ~ 2,
+      nota_imdb < 5 ~ 3,
+      TRUE ~ NA_real_
+    )
+  ) %>% View()
+
 
 # summarise ---------------------------------------------------------------
 
@@ -497,13 +550,14 @@ imdb %>% summarise(
   media_orcamento = mean(orcamento, na.rm = TRUE),
   media_receita = mean(receita, na.rm = TRUE),
   media_lucro = mean(receita - orcamento, na.rm = TRUE)
-)
+) %>% View()
 
 # Diversas sumarizações da mesma coluna
 imdb %>% summarise(
   media_orcamento = mean(orcamento, na.rm = TRUE),
   mediana_orcamento = median(orcamento, na.rm = TRUE),
-  variancia_orcamento = var(orcamento, na.rm = TRUE)
+  variancia_orcamento = var(orcamento, na.rm = TRUE),
+  desvio_padrao_orcamento = sd(orcamento, na.rm = TRUE)
 )
 
 # Tabela descritiva
@@ -515,15 +569,22 @@ imdb %>% summarise(
 )
 
 
+# n_distinct() é similar à:
+imdb %>% 
+  distinct(direcao) %>% 
+  nrow()
+
+
 # funcoes que transformam -> N valores
 log(1:10)
 sqrt()
 str_detect()
 
-# funcoes que sumarizam -> 1 valor
+# funcoes que sumarizam -> 1 valor - FUNÇÕES BOAS PARA SUMMARISE
 mean(c(1, NA, 2))
 mean(c(1, NA, 2), na.rm = TRUE)
 n_distinct()
+n()
 
 
 # group_by + summarise ----------------------------------------------------
@@ -539,10 +600,33 @@ imdb %>%
     media_orcamento = mean(orcamento, na.rm = TRUE),
     media_receita = mean(receita, na.rm = TRUE),
     qtd = n(),
-    qtd_direcao = n_distinct(direcao)
+    qtd_direcao = n_distinct(direcao),
   ) %>%
-  arrange(desc(qtd)) 
+  arrange(desc(qtd)) %>% View()
   
+
+imdb_produtoras <- imdb %>% 
+  drop_na(orcamento, receita) %>% 
+  mutate(lucro = receita - orcamento) %>% 
+  group_by(producao) %>% 
+  summarise(
+    media_orcamento = mean(orcamento, na.rm = TRUE),
+    media_receita = mean(receita, na.rm = TRUE),
+    media_lucro = mean(lucro, na.rm = TRUE),
+    qtd = n(),
+    qtd_direcao = n_distinct(direcao),
+    filmes = knitr::combine_words(titulo, sep = ", ", and = " e ", oxford_comma = FALSE)
+  ) %>%
+  arrange(desc(media_lucro)) 
+
+imdb_produtoras %>% 
+  write_csv2("dados_output/imdb_produtoras.csv")
+
+
+imdb_produtoras
+
+
+# FINAL DA AULA 4 AQUI -----
   
 # left join ---------------------------------------------------------------
 
