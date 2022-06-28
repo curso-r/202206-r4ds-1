@@ -1,0 +1,23 @@
+---
+title: "elro lero"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    default_style: "light"
+    downcute_theme: "default"
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## topico 1 
+
+lalalal
+
+
+### sub topico 
+shauhsuashauhsuah

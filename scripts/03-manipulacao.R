@@ -634,11 +634,47 @@ imdb_produtoras
 # tabelas a partir de uma chave. 
 # Vamos ver um exemplo bem simples.
 
+library(tidyverse)
+
 band_members
 band_instruments
 
-band_members %>% left_join(band_instruments)
-band_instruments %>% left_join(band_members)
+# nome, banda, instrumento -> usar o nome como a chave
+
+
+band_members %>%
+  left_join(band_instruments)
+
+# name  band           plays
+# <chr> <chr>  
+# 1 Mick  Stones       NA
+# 2 John  Beatles      GUITARRA
+# 3 Paul  Beatles      BAIXO
+
+
+band_members %>% 
+  left_join(band_instruments, by = "name")
+
+# ---------
+
+band_instruments %>%
+  left_join(band_members)
+
+
+# name  plays         band 
+# <chr> <chr> 
+# 1 John  guitar       beatles
+# 2 Paul  bass         beatles
+# 3 Keith guitar       NA
+
+
+# Para o left join, o número de linhas da base nova será a mesma da 
+# base de referencia
+
+# exemplo de full_join - coloca tudo!
+band_instruments %>%
+  full_join(band_members)
+
 
 # o argumento 'by'
 band_members %>% left_join(band_instruments, by = "name")
@@ -646,10 +682,15 @@ band_members %>% left_join(band_instruments, by = "name")
 # OBS: existe uma família de joins
 
 band_instruments %>% left_join(band_members)
-band_instruments %>% right_join(band_members)
-band_instruments %>% inner_join(band_members)
-band_instruments %>% full_join(band_members)
 
+band_instruments %>% inner_join(band_members) # quando a chave está nas duas bases
+
+band_instruments %>% full_join(band_members) # retorna todas as combinações
+
+band_instruments %>% anti_join(band_members) # o que não está encontrando equivalencia.
+
+# menos importante
+band_instruments %>% right_join(band_members) # parece um left join, mas com a ordem trocada
 
 # Um exemplo usando a outra base do imdb
 
@@ -658,5 +699,11 @@ imdb_avaliacoes <- read_rds("dados/imdb_avaliacoes.rds")
 
 imdb %>% 
   left_join(imdb_avaliacoes, by = "id_filme") %>%
+  View()
+
+# fazer exemplo com nome diferente!
+imdb %>% 
+  rename(id = id_filme) %>% # de proposito, para o exemplo
+  left_join(imdb_avaliacoes, by = c("id" = "id_filme")) %>%
   View()
 
