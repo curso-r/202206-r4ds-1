@@ -3,6 +3,8 @@
 
 library(tidyverse)
 
+options(scipen = 999)
+
 # Ler base IMDB -----------------------------------------------------------
 
 imdb <- read_rds("dados/imdb.rds")
@@ -21,6 +23,7 @@ imdb %>%
 p <- imdb %>% 
   ggplot()
 
+
 # Gráfico de dispersão da receita contra o orçamento
 imdb %>% 
   ggplot() +
@@ -31,6 +34,17 @@ imdb %>%
   ggplot() +
   geom_point(aes(x = orcamento, y = receita)) +
   geom_abline(intercept = 0, slope = 1, color = "red")
+
+
+imdb %>%
+  ggplot() +
+  geom_abline(intercept = 0, slope = 1, color = "red") +
+  geom_point(aes(x = orcamento, y = receita)) 
+
+
+# y = a + bx
+# intercet = a - é onde a reta cruza o eixo Y
+# slope = b
 
 # Observe como cada elemento é uma camada do gráfico.
 # Agora colocamos a camada da linha antes da camada
@@ -49,9 +63,9 @@ imdb %>%
 imdb %>%
   mutate(
     lucrou = ifelse(lucro <= 0, "Não", "Sim")
-  ) %>%
+  ) %>% 
   ggplot() +
-  geom_point(aes(x = orcamento, y = receita, color = lucrou))
+  geom_point(aes(x = orcamento, y = receita, color = lucrou), alpha = 0.5)
 
 # Salvando um gráfico em um arquivo
 imdb %>%
@@ -61,7 +75,16 @@ imdb %>%
   ggplot() +
   geom_point(aes(x = orcamento, y = receita, color = lucrou))
 
-ggsave("meu_grafico.png")
+# se você não especificar essas parâmetros,  ele salva por default do jeito 
+# que ta na sua tela do R
+ggsave("graficos_output/meu_grafico.png")
+
+# podemos especificar o tamanho
+ggsave("graficos_output/meu_grafico.png", 
+       dpi = 300, # resolucao
+       width = 7, #largura
+       height = 5 #altura
+       ) 
 
 
 # Filosofia ---------------------------------------------------------------
@@ -80,13 +103,105 @@ ggsave("meu_grafico.png")
 
 # Nota média dos filmes ao longo dos anos
 
+# x = ano 
+# y = nota média 
+# precisamos de uma base com 1 linha por ano, e não
+# 1 linha por filme!
+
+
 imdb %>% 
   group_by(ano) %>% 
   summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
   ggplot() +
   geom_line(aes(x = ano, y = nota_media))
 
-# Número de filmes por ano 
+# podemos colocar linhas e pontos!
+imdb %>% 
+  group_by(ano) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  ggplot() +
+  geom_line(aes(x = ano, y = nota_media)) +
+  geom_point(aes(x = ano, y = nota_media))
+
+
+# segunda forma possível
+imdb %>% 
+  group_by(ano) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  ggplot(aes(x = ano, y = nota_media)) +
+  geom_line() +
+  geom_point()
+
+# terceira forma possivel
+imdb %>% 
+  group_by(ano) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  ggplot() +
+  aes(x = ano, y = nota_media) +
+  geom_line() +
+  geom_point()
+
+
+# apenas filmes a partir de 1912?
+imdb %>% 
+  filter(ano >= 1912) %>% 
+  drop_na(ano) %>% 
+  group_by(ano) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  ggplot() +
+  aes(x = ano, y = nota_media) +
+  geom_line() +
+  geom_point()
+
+
+# Dúvida do Luiz -------------------
+
+imdb %>% 
+  ggplot() +
+  geom_point(aes(x = ano, y = nota_imdb))
+
+# precisamos calcular a media!
+
+imdb %>% 
+  group_by(ano) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  ggplot(aes(x = ano, y = nota_media)) +
+  geom_point() +
+  geom_line()
+
+# Duvida da Daniela
+
+imdb %>% 
+  mutate(date_lancamento = as.Date(data_lancamento),
+         mes_ano = lubridate::floor_date(date_lancamento, "month")) %>%
+  group_by(mes_ano) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm= TRUE)) %>%
+  ggplot() +
+  geom_line(aes(x = mes_ano, y = nota_media))
+
+
+# Dúvida Tales
+# Uma dúvida de data também. Como transformar uma variável char "2022-06" em Date?
+
+base_exemplo <- tibble(data_texto = c("2022-06", "2022-04", "2022-05"))
+
+
+base_exemplo %>% 
+  mutate(data_date = readr::parse_date(data_texto, format = "%Y-%m"))
+
+
+base_exemplo2 <- tibble(data_texto = c("30/06/2022",
+                                       "15/02/1993",
+                                       "12/04/2012"))
+
+
+base_exemplo2 %>% 
+  mutate(data_date = readr::parse_date(data_texto, format = "%d/%m/%Y"))
+
+
+# Número de filmes por ano ------
+
+# imbd - x = ano, y = soma de filmes por ano
 
 imdb %>% 
   filter(!is.na(ano), ano != 2020) %>% 
@@ -95,9 +210,14 @@ imdb %>%
   ggplot() +
   geom_line(aes(x = ano, y = num_filmes)) 
 
+
+imdb %>% 
+  drop_na(ano) %>% 
+  count(ano)
+
 # Nota média do Robert De Niro por ano
 imdb %>%
-  filter(str_detect(elenco, "Robert De Niro")) %>% 
+  filter(str_detect(elenco, "Robert De Niro")) %>%
   group_by(ano) %>% 
   summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
   ggplot() +
@@ -113,13 +233,23 @@ imdb %>%
   geom_point(aes(x = ano, y = nota_media))
 
 # Reescrevendo de uma forma mais agradável
-imdb %>% 
+grafico_deniro <- imdb %>% 
   filter(str_detect(elenco, "Robert De Niro")) %>% 
   group_by(ano) %>% 
   summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  mutate(nota_media = round(nota_media, 1)) %>% 
   ggplot(aes(x = ano, y = nota_media)) +
   geom_line() +
   geom_point()
+
+
+library(plotly)
+ggplotly(grafico_deniro)
+
+# dúvida da Mariângela
+imdb %>% 
+  filter(str_detect(elenco, "Robert De Niro"), nota_imdb < 4) %>% 
+  select(titulo, ano, nota_imdb)
 
 # Colocando as notas no gráfico
 imdb %>% 
