@@ -60,6 +60,5 @@ jobs:
           git add README.Rmd
           git add README.md
           git add _config.yml
-          git add .github/r-depends.rds
           git commit -m "Atualizando página do curso" || echo "No changes to commit"
           git push origin || echo "No changes to commit"
