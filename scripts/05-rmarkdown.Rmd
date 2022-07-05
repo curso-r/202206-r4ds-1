@@ -242,6 +242,52 @@ imdb %>%
 
 # --- Continuar aqui! Adicionar uma imagem externa.
 
+- 10 produtoras com mais filmes na base
+- vamos fazer um gráfico de barras - x, y, nomes, numero de filmes
+
+```{r, out.width="80%", fig.align='center', fig.cap="10 produtoras com o maior número de filmes, segundo a base do IMDB."}
+library(tidyverse)
+  
+imdb %>% 
+  count(producao, name = "numero_filmes") %>% 
+  drop_na(producao) %>% 
+  slice_max(order_by = numero_filmes, n = 10)
+
+# manipular os dados
+imdb %>% 
+  count(producao) %>% 
+  drop_na(producao) %>% 
+  arrange(desc(n)) %>% 
+  head(10) %>% 
+ # plotar os dados  
+  ggplot() +
+  geom_col(aes(x = n, y = producao), fill = "lightblue") +
+  theme_minimal()
+```
+
+```{r}
+# imdb <- read_rds("../dados/imdb.rds")
+```
+
+
+```{r fig.align='center'}
+knitr::include_graphics("https://rmarkdown.rstudio.com/docs/reference/figures/logo.png")
+```
+
+
+```{r fig.align='center'}
+knitr::include_graphics("https://media.giphy.com/media/AcfTF7tyikWyroP0x7/giphy.gif")
+```
+
+
+```{r fig.align='center'}
+knitr::include_graphics("../img/cover.png")
+
+"../img/cover.png"
+```
+
+
+
 ## Incluindo gráficos
 
 Para construir gráficos, não há segredos.

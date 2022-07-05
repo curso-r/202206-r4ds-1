@@ -264,6 +264,15 @@ imdb %>%
 
 # Gráfico de barras -------------------------------------------------------
 
+# geom_bar só aceita x, não é tão intuitivo
+# imdb %>% 
+#   filter(nota_imdb > 8.5) %>% 
+#   ggplot() +
+#   geom_bar(aes(x = direcao))
+
+  
+
+
 # Número de filmes das pessoas que dirigiram filmes na base
 imdb %>% 
   count(direcao) %>%
@@ -295,6 +304,26 @@ imdb %>%
   
 
 # Ordenando as barras
+
+
+# imdb %>% 
+#   count(direcao) %>%
+#   filter(!is.na(direcao)) %>% 
+#   slice_max(order_by = n, n = 10) %>% 
+#   arrange(n) %>% 
+#   ggplot() +
+#   geom_col(aes(x = n, y = direcao))
+
+
+imdb %>% 
+  count(direcao) %>%
+  filter(!is.na(direcao)) %>% 
+  slice_max(order_by = n, n = 10) %>% 
+  mutate(direcao2 = forcats::fct_reorder(direcao, n)) %>% 
+  arrange(direcao2)
+
+
+
 imdb %>% 
   count(direcao) %>%
   filter(!is.na(direcao)) %>% 
@@ -307,6 +336,28 @@ imdb %>%
     aes(x = n, y = direcao, fill = direcao),
     show.legend = FALSE
   ) 
+
+# duvida mari ---
+imdb %>%
+  count(direcao) %>%
+  filter(!is.na(direcao)) %>%
+  slice_max(order_by = n, n = 10) %>%
+  arrange(n) %>%
+  ggplot() +
+  geom_col(aes(x = n, y = reorder(direcao, n)))
+
+# duvida ale -----
+
+base_ale <- tibble::tibble(
+  status = c( "Pos", "Pré"),
+  valor = c(10, 20)
+)
+
+base_ale %>% 
+  mutate(status = factor(status, levels = c("Pré", "Pos"))) %>% 
+  ggplot() +
+  geom_col(aes(x = status, y = valor))
+
 
 # Colocando label nas barras
 top_10_direcao <- imdb %>% 
@@ -323,8 +374,22 @@ top_10_direcao %>%
     aes(x = n, y = direcao, fill = direcao),
     show.legend = FALSE
   ) +
-  geom_label(aes(x = n/2, y = direcao, label = n)) 
+ geom_label(aes(x = n/2, y = direcao, label = n)) 
+ # geom_text(aes(x = n/2, y = direcao, label = n))
 
+
+# duvida Ana --- diminuir tamanho da fonte.
+
+top_10_direcao %>%
+  mutate(
+    direcao = forcats::fct_reorder(direcao, n)
+  ) %>% 
+  ggplot() +
+  geom_col(
+    aes(x = n, y = direcao, fill = direcao),
+    show.legend = FALSE
+  ) +
+  geom_label(aes(x = n/2, y = direcao, label = n), size = 3) 
 
 # Histogramas e boxplots --------------------------------------------------
 
@@ -337,6 +402,7 @@ imdb %>%
 # Arrumando o tamanho das bases
 imdb %>% 
   filter(direcao == "Steven Spielberg") %>%
+  select(lucro) %>% 
   ggplot() +
   geom_histogram(
     aes(x = lucro), 
@@ -345,28 +411,44 @@ imdb %>%
   )
 
 # Boxplot do lucro dos filmes das pessoas que dirigiram
-# mais de 30 filmes
+# mais de 15 filmes que temo informações sobre o lucro
 imdb %>% 
-  filter(!is.na(direcao)) %>%
+  drop_na(direcao, lucro) %>% 
   group_by(direcao) %>% 
-  filter(n() >= 30) %>% 
-  mutate(lucro = receita - orcamento) %>% 
+  filter(n() >= 15) %>% 
+ # mutate(lucro = receita - orcamento) %>% 
   ggplot() +
-  geom_boxplot(aes(x = direcao, y = lucro))
+  geom_boxplot(aes(y = direcao, x = lucro))
 
 # Ordenando pela mediana
 
 imdb %>% 
-  filter(!is.na(direcao)) %>%
+  drop_na(direcao, lucro) %>% 
   group_by(direcao) %>% 
-  filter(n() >= 30) %>% 
+  filter(n() >= 15) %>% 
   ungroup() %>% 
+  # select(titulo, direcao, lucro) %>% 
   mutate(
-    lucro = receita - orcamento,
-    direcao = forcats::fct_reorder(direcao, lucro, na.rm = TRUE)
+    direcao = forcats::fct_reorder(direcao, lucro, .fun = median)
   ) %>% 
   ggplot() +
-  geom_boxplot(aes(x = direcao, y = lucro))
+  geom_boxplot(aes(y = direcao, x = lucro))
+
+
+
+# padrao ---
+
+# manipulacoes da base %>% 
+# ggplot() +
+# geom_*()
+
+# duvida que ficou da aula passada 
+imdb %>% 
+  drop_na(orcamento, receita) %>% 
+  ggplot(aes(x = orcamento, y = receita)) +
+  geom_point() +
+  geom_smooth(method = "lm") # regressao linear / linear model
+
 
 # Título e labels ---------------------------------------------------------
 
@@ -383,14 +465,23 @@ imdb %>%
     caption = "Fonte: imdb.com"
   )
 
+
+# imdb %>%
+#   ggplot() +
+#   geom_point(mapping = aes(x = orcamento, y = receita, color = lucro)) +
+#   labs(x = NULL, y = NULL)
+
+
+
 # Escalas
 imdb %>% 
   group_by(ano) %>% 
   summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
   ggplot() +
   geom_line(aes(x = ano, y = nota_media)) +
-  scale_x_continuous(breaks = seq(1896, 2016, 10)) +
-  scale_y_continuous(breaks = seq(0, 10, 2))
+  scale_y_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) +
+  scale_x_continuous(breaks = seq(1880, 2020, 10), limits = c(1910, 2020))
+
 
 # Visão do gráfico
 imdb %>% 
@@ -405,17 +496,38 @@ imdb %>%
 # Cores -------------------------------------------------------------------
 
 # Escolhendo cores pelo nome
-imdb %>% 
+grafico_diretores <- imdb %>% 
   count(direcao) %>%
   filter(!is.na(direcao)) %>% 
   slice_max(order_by = n, n = 5) %>% 
+  mutate(direcao = forcats::fct_reorder(direcao, n)) %>% 
   ggplot() +
   geom_col(
     aes(x = n, y = direcao, fill = direcao), 
     show.legend = FALSE
-  ) +
+  ) 
+
+
+grafico_diretores +
   scale_fill_manual(values = c("orange", "royalblue", "purple", "salmon", "darkred"))
 # http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+
+grafico_diretores +
+  scale_fill_brewer(palette = "Set2")
+
+?scale_fill_brewer
+
+grafico_diretores +
+  scale_fill_viridis_d(option = "E")
+
+
+# Pergunta Mariangela
+library(scales)
+imdb %>%   
+  ggplot() +
+  geom_point(mapping = aes(x = orcamento, y = receita)) +
+  scale_y_continuous(labels = label_number(scale = 1/1e6, suffix = "M", prefix = "US$ "))+
+  scale_x_continuous(labels = label_number(scale = 1/1e6, suffix = "M", prefix = "US$ "))
 
 # Escolhendo pelo hexadecimal
 imdb %>% 
@@ -428,13 +540,13 @@ imdb %>%
     show.legend = FALSE
   ) +
   scale_fill_manual(
-    values = c("#ff4500", "#268b07", "#ff7400", "#abefaf", "#33baba")
+    values = c("#499fb3", "#914301", "#ff7400", "#abefaf", "#33baba")
   )
 
 # Mudando textos da legenda
 imdb %>% 
   mutate(sucesso_nota = case_when(nota_imdb >= 7 ~ "sucesso_nota_imbd",
-                                  TRUE ~ "sem_sucesso_nota_imdb")) %>%
+                                  TRUE ~ "sem_sucesso_nota_imdb")) %>% 
   group_by(ano, sucesso_nota) %>% 
   summarise(num_filmes = n()) %>% 
   ggplot() +
@@ -444,18 +556,20 @@ imdb %>%
 # Definiando cores das formas geométricas
 imdb %>% 
   ggplot() +
-  geom_point(mapping = aes(x = orcamento, y = receita), color = "#ff7400")
+  geom_point(mapping = aes(x = orcamento, y = receita), color = "#007C91")
 
 # Tema --------------------------------------------------------------------
 
 # Temas prontos
-imdb %>% 
+imdb %>%
   ggplot() +
   geom_point(mapping = aes(x = orcamento, y = receita)) +
-  # theme_bw() 
-  # theme_classic() 
-  # theme_dark()
-  theme_minimal()
+  # ggthemr::ggthemr("fresh")$theme
+  theme_light()
+# theme_bw()
+# theme_classic()
+# theme_dark()
+# theme_minimal()
 
 # A função theme()
 imdb %>% 
@@ -463,12 +577,42 @@ imdb %>%
   geom_point(mapping = aes(x = orcamento, y = receita)) +
   labs(
     title = "Gráfico de dispersão",
-    subtitle = "Receita vs Orçamento"
+    subtitle = "Receita vs Orçamento",
+    x = "Orçamento",
+    y = "Receita"
   ) +
+  theme_light() +
   theme(
+    text = element_text(family = "Montserrat", 
+      color = "black"),
+    axis.title = element_text(face = "bold"),
     plot.title = element_text(hjust = 0.5),
     plot.subtitle = element_text(hjust = 0.5)
   )
+
+
+imdb %>% 
+  ggplot() +
+  geom_point(mapping = aes(x = orcamento, y = receita)) +
+  labs(
+    title = "Gráfico de dispersão",
+    subtitle = "Receita vs Orçamento",
+    x = "Orçamento",
+    y = "Receita"
+  ) +
+  ggthemes::theme_fivethirtyeight()
+
+
+imdb %>% 
+  ggplot() +
+  geom_point(mapping = aes(x = orcamento, y = receita)) +
+  labs(
+    title = "Gráfico de dispersão",
+    subtitle = "Receita vs Orçamento",
+    x = "Orçamento",
+    y = "Receita"
+  ) +
+  ggimprensa::tema_poder360()
 
 # Mais conteúdo sobre a função theme() no curso de
 # visualizacao de dados
