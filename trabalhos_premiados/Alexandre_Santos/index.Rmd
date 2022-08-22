@@ -1,0 +1,524 @@
+---
+title: "Esporte e dinheiro: uma análise da lista da Forbes"
+subtitle: "*Sports and Money: A Forbes List Analysis*"
+author: " Por *Alexandre Santos*"
+output:
+  prettydoc::html_pretty:
+    theme: lumen
+    highlight: github
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{css}
+body{
+text-align:justify;
+}
+```
+
+```{r, include=FALSE} 
+options(scipen = 999)
+```
+
+```{r, include=FALSE}
+# instalando/habilitando as bibliotecas 
+library(readr)
+library(tidyverse)
+library(ggthemes)
+library(ggimage)
+library(knitr)
+```
+
+```{r, include=FALSE}
+# Baixando o dataframe do gitHub
+atletas_forbes <- 
+  read_csv("https://raw.githubusercontent.com/AlexandreStos/tcc_sci_1/main/atletas_forbes.csv")
+```
+
+```{r, include=FALSE}
+# manipulando os dados ----------------------------------------------------
+
+# renomeando variaveis ----------------------------------------------------
+
+atletas_forbes <-  atletas_forbes |>
+  rename(
+    arrecadacao = `earnings ($ million)`,
+    nome = Name,
+    nacionalidade = Nationality,
+    ranking_ano = `Current Rank`,
+    ranking_ant = `Previous Year Rank`,
+    esporte = Sport,
+    ano = Year,
+    id = S.NO
+  )
+
+#excluindo coluna ranking_ant (variável sem utilização)
+
+atletas_forbes$ranking_ant <- NULL
+
+# Criando a coluna arrecadação anual --------------------------------------
+
+
+atletas_forbes <- atletas_forbes |> 
+  mutate(arrec_ano = arrecadacao * 12)
+
+
+# Renomeando os fatores da coluna esportes e agrupando categorias semelhantes--------------------------------
+
+# Criando sub dataframes
+
+at_2 <- atletas_forbes
+
+
+futebol <- at_2 |> 
+filter(esporte == "Soccer"| esporte == "soccer") |> 
+  mutate(esporte = "Futebol")
+
+automobilismo <- at_2 |> 
+  filter(esporte == "auto racing"| esporte == "Auto Racing"|
+           esporte == "F1 Motorsports"| esporte == "NASCAR"|
+           esporte == "Auto Racing (Nascar)"| 
+           esporte == "F1 racing"|esporte == "motorcycle gp") |>
+  mutate(esporte= "Automobilismo")
+
+basquete <- at_2 |> 
+  filter(esporte == "basketball"| esporte == "Basketball"|esporte=="NBA") |> 
+  mutate(esporte= "Basquete")
+
+golf <- at_2 |> 
+  filter(esporte == "Golf"|esporte == "golf") |> 
+  mutate(esporte= "Golf")
+
+lutas <- at_2 |> 
+  filter(esporte=="Boxing"|esporte=="boxing"|esporte=="MMA") |> 
+  mutate(esporte="Lutas (boxe e MMA)")
+
+tenis <- at_2 |> 
+  filter(esporte == "Tennis"|esporte == "tennis") |> 
+  mutate(esporte="Tênis")
+
+fut_americano <- at_2 |> 
+  filter(esporte =="NFL"|esporte =="American Football / Baseball"|
+  esporte =="American Football") |> 
+  mutate(esporte ="Futebol Americano")
+# corrigindo o nome do atleta Aaron Rodgers---------------------------------  
+ fut_americano <- fut_americano |>
+    filter(esporte == "Futebol Americano") |>
+       mutate(nome = dplyr::case_when(
+       stringr::str_detect(nome, "Aaron Rogers") ~ "Aaron Rodgers",
+       TRUE ~ nome))
+
+hockey <- at_2 |> 
+  filter(esporte=="ice hockey"|esporte=="Ice Hockey"|esporte=="Hockey") |> 
+  mutate(esporte="Hockey no gelo")
+
+ciclismo <- at_2 |> 
+  filter(esporte=="cycling") |> 
+  mutate(esporte="Ciclismo")
+
+basebol <- at_2 |> 
+  filter(esporte=="baseball"|esporte=="Baseball") |> 
+  mutate(esporte="Basebol")
+
+
+
+
+
+# juntando os dataframes esportes em tabela única -------------------------
+# função rbind: soma tabelas do mesmo número de colunas e com os mesmos nomes 
+
+forbes <- rbind(futebol, automobilismo, basquete, basebol, 
+                ciclismo, hockey,
+                fut_americano,lutas, tenis, golf)
+
+
+# excluido dataframes não necessários -------------------------------------
+
+at_2= NULL  
+atletas_forbes= NULL
+
+```
+
+
+# **Esporte é negócio**
+
+
+### *Sport is business*
+
+Nas últimas décadas com o aumento do marketing esportivo, aumento do acesso à informação e a divulgação de atletas e marcas por diversos meios de comunicação observamos um aumento significativo de rendimento financeiro de atletas, equipes esportivas e principalmente do consumo do esporte como entretenimento.
+
+![](https://burst.shopifycdn.com/photos/fan-at-basketball-game.jpg?width=925&format=pjpg&exif=1&iptc=1)
+
+Foto da Matthew Henry do <a href="https://www.shopify.com.br/burst?utm_campaign=photo_credit&amp;utm_content=Fotos+em+HD+de+Torcedor+no+jogo+de+basquete&amp;utm_medium=referral&amp;utm_source=credit">Burst</a>
+
+No entanto, com a expressiva movimentação financeira, surge algumas dúvidas e principalmente curiosidades a respeito de quais modalidades, países e atletas mais lucraram com esse aumento do consumo do esporte. Portanto, vamos imergir neste mundo dos superastros e esportes das últimas décadas, avaliando o avanço do esporte como negócio. Por fim, analisaremos como os atletas brasileiros evoluíram nestas 3 décadas com relação aos seus lucros e quem foram esses atletas citados pela Forbes.
+
+#### *Os valores aqui relatados são referentes publicidade, licenciamento de produtos, e outras fontes de receitas dos atletas*.
+
+## **1. Faturamento geral e por países**.
+
+O primeiro dado assustador é o valor total arrecadado entre os 10 atletas mais bem pagos de 1990 a 2020, segundo Forbes, é de $`r sum(forbes$arrec_ano)`M, (aproximadamente **164 bilhões de dólares**), considerando somente os atletas que apareceram nesta lista. Imagine quanto o esporte movimenta em todo o mundo!
+
+Neste cenário alguns países tem se destacado neste período, conforme a **Tabela 1**.
+
+**Tabela 1**. Dez maiores arrecadações de países (1990-2020)
+
+```{r, echo=FALSE}
+forbes |> 
+  select(nacionalidade, arrec_ano) |> 
+  group_by(nacionalidade) |> 
+  summarise(sum(arrec_ano, na.rm = TRUE)) |> 
+  select(País= nacionalidade, 
+         `Arrecadação (M)` = `sum(arrec_ano, na.rm = TRUE)`) |> 
+  slice_max(order_by = `Arrecadação (M)`, n=10) |> 
+  kable()
+
+```
+
+
+#### **Legenda**: Brazil: Brasil; Finland: Finlandia; Germany: Alemanha; Italy: Itália; Philippines: Filipinas; Switzerland; Suiça; UK: Reino Unido; USA: Estados Unidos da América.
+
+
+*Valores em milhões de dólares (M)*
+
+Adicionalmente, quando avaliamos a mediana de faturamento por países observamos a ainda maior superioridade de atletas americanos (**Gráfico 1**)
+
+**Grafíco 1**. Análise mediana de faturamento país.
+
+```{r}
+forbes |> 
+  slice_max(order_by = arrec_ano, n=5) |> 
+      ggplot()+
+  geom_boxplot()+
+  aes(x= nacionalidade, y= arrec_ano, fill= nacionalidade, colors(distinct = "green" ))+
+  scale_y_continuous(breaks = seq(0,6000,400),
+  labels = paste(seq(0,6000,400), "M"))+
+  labs(x= " País",
+       y= "Mediana da arrecadação ($)",
+       subtitle = "Arrecadação mediana dos 3 principais países de 1990 a 2020")+
+  labs(title = "Maiores arrecadações medianas por países", hjust = 1)+
+  scale_fill_viridis_d()+
+  theme_classic()+
+  theme(legend.title=element_blank(), axis.text.x = element_blank())
+  
+  
+```
+
+
+#### **Legenda**: Philippines: Filipinas; USA: Estados Unidos da América.
+
+*Valores em milhões de dólares (M)*
+
+
+
+**Gráfico 2**. Análise de evolução de arrecadação  por atletas citados na Forbes (1990-2020)**
+
+```{r}
+g3 <- forbes |>
+  select(nome, nacionalidade, arrecadacao, arrec_ano, ano) |> 
+  group_by(ano) |>
+  summarise(mean(arrec_ano)) |>
+  ggplot() +
+  aes(x = ano, y = `mean(arrec_ano)` ) +
+  geom_line(size = 1.5, color = "#389468")+
+  geom_point(size=2.5, color = "#389468")+
+   scale_x_continuous(
+    breaks = seq(1990,2020, 5))+
+  scale_y_continuous(
+    breaks = seq(0,1500,100), 
+    labels = paste(seq(0,1500,100), "M"))+
+  labs(title = "Evolução da arrecadação de atletas Forbes",
+       x= "Ano",
+       y= "Arrecadação em dolares (M)",
+       subtitle= "Valores citados entre 1990-2020"
+       )+
+ labs(captions= "Soma da arrecadação de cada atletas por ano do ranking")+
+  theme_classic()
+  ggbackground(g3, "grafico1a.png")
+```
+
+*Valores em milhões de dólares (M)*
+
+Avaliando o **Gráfico 2** podemos notar uma evolução na arrecadação dos atletas, entretanto, destacamos a queda referente aos anos com a presença da pandemia de COVID-19, possivelmente impactando em eventos presenciais e compra de produtos, diminuindo assim a arrecadação médias dos atletas. Demostrando assim, que o esporte como fenômeno cultural, pode ser um excelente indicador de crises econômicas e sociais.
+
+## Arrecadação por esporte
+
+**Tabela 2**. Faturamento acumulado por esportes (1990-2020)
+
+```{r}
+forbes |> 
+  select(esporte, arrec_ano, ano) |> 
+  group_by(esporte) |> 
+  summarise(sum(arrec_ano), na.rm=TRUE) |> 
+  select(Esporte= esporte,  
+         `Arrecadação (M)` = `sum(arrec_ano)`) |> 
+  slice_max(order_by = `Arrecadação (M)`, n=10) |> 
+  kable()
+```
+*Arrecadação em milhões de dólares por ano*
+
+**Gráfico 3**. Evolução da arrecadação dos 3 esportes que mais lucraram, segundo a Forbes (1990-2020)
+
+
+```{r}
+g4 <- forbes |> 
+  filter(esporte=="Basquete"| esporte=="Lutas (boxe e MMA)"| esporte=="Futebol") |> 
+select(esporte, arrec_ano, ano) |> 
+  ggplot()+
+  aes(x=ano, y=arrec_ano, color=esporte)+
+  geom_line(size=0.5)+
+  geom_point(size=1)+
+   labs(x= " Anos ",
+       y= "Faturamento anual ($)")+
+  labs(title = " Esportes que mais arrecadaram segundo o ranking da Forbes", hjust = 1)+
+  scale_x_continuous(
+    breaks = seq(1990,2020, 5))+
+  scale_y_continuous(
+    breaks = seq(0,15000,300), 
+    labels = paste(seq(0,15000,300), "M"))+
+   scale_fill_viridis_c()+
+  theme_classic()
+  ggbackground(g4, "grafico1a.png")
+
+```
+*Arrecadação em milhões de dólares por ano*
+
+### **Análise individual por esporte**
+
+####  **Basquete**
+
+O basquete mesmo sendo um esporte coletivo gera imensa receita para seus All-Star, levando a modalidade ao topo do ranking da Forbes e dentro do nosso campeão em lucros podemos destacar as 5 maiores arrecadações individuais, segundo a **Tabela 3**.
+
+**Tabela 3**. As 5 primeiras posições de atletas de basquete 
+
+```{r}
+forbes |> 
+  filter(esporte=="Basquete") |> 
+  select(Atleta = nome,   
+  `Arrecadação (M)` = arrec_ano, 
+  Ano = ano) |> 
+  slice_max(order_by = `Arrecadação (M)`, n=5) |> 
+  kable()
+```
+*Arrecadação em milhões de dólares por ano*
+
+![](https://s2.glbimg.com/HtjTS2xSSfcBUv7CyEUpCxtkDrg=/0x0:1024x683/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_bc8228b6673f488aa253bbcb03c80ec5/internal_photos/bs/2021/7/4/N2FMnsQX2Mos5XcbLpiw/gettyimages-1305887210.jpg)
+
+Foto <a href="https://s2.glbimg.com/HtjTS2xSSfcBUv7CyEUpCxtkDrg=/0x0:1024x683/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_bc8228b6673f488aa253bbcb03c80ec5/internal_photos/bs/2021/7/4/N2FMnsQX2Mos5XcbLpiw/gettyimages-1305887210.jpg">s2.glbimg.com/</a>
+
+
+
+Nesta tabela observamos a superioridade de Lebron James ocupando as 4 primeiras posições do ranking destas 3 décadas.
+Entretanto, ambos os atletas devem estar felizes da vida com suas contas bancárias, e **Stephen Curry** ainda mais com o título da NBA e o MVP das finais do ano de 2022.
+
+
+
+#### **Lutas (Boxe e MMA)**
+
+As lutas foram alavancadas nesta lista pelas apostas astronômicas, e especificamente, o boxe se destacaram na 2ª posição na análise por esportes, como destaque podemos citar os 5 primeiros atletas em arrecadação, conforme **Tabela 4**.  
+
+**Tabela 4**. As 5 primeiras posições de atletas de lutas 
+
+```{r}
+forbes |> 
+  filter(esporte=="Lutas (boxe e MMA)") |> 
+  select(Atleta = nome,   
+  `Arrecadação (M)` = arrec_ano, 
+  Ano = ano) |> 
+  slice_max(order_by = `Arrecadação (M)`, n=5) |> 
+  kable()
+```
+
+*Arrecadação em milhões de dólares por ano*
+
+Os maires arrecadadores são do boxe, tendo como maior arrecadador o lutador **`r forbes |> filter(esporte== "Lutas (boxe e MMA)") |> slice(which.max(arrec_ano)) |>  select(nome)`**, com arrecadação anual de assustadores $**`r forbes |> filter(esporte == "Lutas (boxe e MMA)") |> slice(which.max(arrec_ano)) |> select(arrec_ano)`M** em **`r forbes |> filter(esporte == "Lutas (boxe e MMA)") |> slice(which.max(arrec_ano)) |> select(ano)`**. Além disso, assumindo as 2 primeiras posições deste ranking, seguido pelo lutador **Manny Pacquiao**.
+
+![](https://veja.abril.com.br/wp-content/uploads/2017/03/floyd.jpg?quality=70&strip=info&resize=850,567)
+
+Foto da <a href="https://veja.abril.com.br/wp-content/uploads/2017/03/floyd.jpg?quality=70&strip=info&resize=850,567"> Veja </a>
+
+
+Outro destaque é a aparição de outra modalidade de combate, o MMA, com um único representante o irlandes **`r forbes |> filter(nacionalidade=="Ireland") |>  select(nome)`**, lucrando $**`r forbes |> filter(nacionalidade=="Ireland") |>  select(arrec_ano)`M** no ano de **`r forbes |> filter(nacionalidade=="Ireland") |>  select(ano)`**, ficando conhecido por promover suas lutas e desafiar os adversários para lucrar com as bolsas de apostas. 
+
+![](https://s2.glbimg.com/RYnr0bLqzxSsoz2F7-Sx_gN3Dws=/0x0:620x413/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_cf9d035bf26b4646b105bd958f32089d/internal_photos/bs/2020/p/w/Uh6j0YToOAMixvxBZAvA/2020-01-20-34.jpg)
+
+Foto do site <a href="https://s2.glbimg.com/RYnr0bLqzxSsoz2F7-Sx_gN3Dws=/0x0:620x413/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_cf9d035bf26b4646b105bd958f32089d/internal_photos/bs/2020/p/w/Uh6j0YToOAMixvxBZAvA/2020-01-20-34.jpg"> s2.glbimg.com </a>
+
+#### **Futebol**
+
+Fechando o nosso pódio na 3.ª posição encontramos o futebol, esporte com diversas competições ocorrendo simultaneamente no mundo, tem como destaque a arrecadação das equipes européias, com suas ligas bem estruturadas e os melhores atletas do globo. Além disso, a copa do mundo realizada a cada 4 anos movimenta valores gigantescos. Por fim, levando seus astros a faturar boladas de dinheiro, conforme o **Tabela 5**
+
+**Tabela 5**. As 5 primeiras posições de atletas de futebol
+
+```{r}
+forbes |> 
+  filter(esporte == "Futebol") |> 
+  select(Atleta = nome,   
+  `Arrecadação (M)` = arrec_ano, 
+  Ano = ano) |> 
+  slice_max(order_by = `Arrecadação (M)`, n=5) |> 
+  kable()
+```
+
+*Arrecadação em milhões de dolares por ano*
+
+
+Quando avaliado individualmente Messi apresenta o maior valor para um só ano, entretanto, quando somamos as arrecadações durante os anos, Cristiano Ronaldo ultrapassa o Argentino no pódio.
+**Gráfico 4**. Arrecadação somada dos principais jogadores de futebol na lista Forbes
+
+
+```{r}
+forbes |> 
+  filter(esporte=="Futebol") |> 
+  select(Atleta = nome,   
+  `Arrecadação (M)` = arrec_ano, 
+  Ano = ano) |> 
+  slice_max(order_by = `Arrecadação (M)`, n=5) |> 
+  ggplot()+
+  aes(x= Atleta, y=`Arrecadação (M)`, fill= Atleta, colours(distinct = "ver" )) +
+  geom_col()+ 
+  scale_y_continuous(
+  breaks = seq(0,4000,1000),
+  labels = paste(seq(0,4000,1000), "M"))+
+   labs(x= " Jogadores ",
+       y= "Arrecadação ($)",
+       subtitle = "Arrecadação somada dos 3 principais jogadores da Forbes")+
+  labs(title = "Maiores arrecadações no futebol", hjust = 1)+
+  scale_fill_viridis_d()+
+  theme_classic()+
+   theme(legend.title=element_blank(), axis.text.x = element_blank())
+```
+*Arrecadação em milhões de dolares por ano*
+
+
+
+**Rivalidade até na lista Forbes**
+
+A disputa vai além das quatro linhas e parece que o Neymar não fatura mais nem fora delas.
+
+![](https://conteudo.imguol.com.br/c/esporte/0a/2020/03/05/lionel-messi-cristiano-ronaldo-e-neymar-em-composicao-de-fotos-da-fifa-antes-da-copa-do-mundo-de-2018-1583453764233_v2_900x506.jpg.webp)
+Foto do site <a href="https://conteudo.imguol.com.br/c/esporte/0a/2020/03/05/lionel-messi-cristiano-ronaldo-e-neymar-em-composicao-de-fotos-da-fifa-antes-da-copa-do-mundo-de-2018-1583453764233_v2_900x506.jpg.webp"> conteudo.imguol.com.br </a>
+
+
+## **Grandes esportes fora do pódio**
+
+### *Esportes americanos*
+
+Impressionantemente, quando analisamos as maiores arrecadações por ano dos esportes americanos (i.e. **futebol americano**, **basebol** e **Hoquey**) encontramos nas 10 primeiras posições atletas da bola oval.
+
+**Tabela 6**. Principais atletas na Forbes de Esportes Americanos
+
+```{r}
+ forbes |>
+    filter(esporte == "Futebol Americano"| esporte == "Basebol"| esporte =="Hockey no gelo")|>     select(Atleta = nome,`Arrecadação (M)` = arrec_ano, Ano = ano)|> 
+  slice_max(order_by = `Arrecadação (M)`, n =10) |> 
+  kable()
+  
+```
+
+*Arrecadação em milhões de dólares por ano*
+
+**Gráfico 5 **. Arrecadação somada dos principais atletas de esportes americanos
+
+```{r}
+ forbes |>
+    filter(esporte == "Futebol Americano"| esporte == "Basebol"| esporte =="Hockey no gelo")|> 
+  select(nome, arrec_ano) |> 
+  group_by(nome) |> 
+  summarize(sum(arrec_ano)) |> 
+  slice_max(order_by = `sum(arrec_ano)`, n =3) |> 
+  ggplot()+
+  aes(x= nome, y=`sum(arrec_ano)`, fill= nome, colours(distinct = "green" )) +
+  geom_col()+ 
+  scale_y_continuous(
+  breaks = seq(0,2000,200),
+  labels = paste(seq(0,2000,200), "M"))+
+   labs(x= " Atletas ",
+       y= "Arrecadação ($)",
+       subtitle = "Arrecadação somada dos 3 principais atletas de esportes americanos")+
+  labs(title = "Arrecadações de atletas de esportes americanos", hjust = 1)+
+  scale_fill_viridis_d()+
+  theme_classic()+
+  theme(legend.title=element_blank(), axis.text.x = element_blank())
+
+```
+
+
+Quando somamos todas as aparições de atletas de esportes americanos na lista da Forbes encontramos a presença do atleta de basebol **Alex Rodriguez**, mas acompanhado por dois quarterbacks da NFL.
+
+## **O Brasil na Forbes**
+
+O Brasil quando se trata da lista da Forbes apenas engatinha, temos poucos atletas citados, entretanto, não surpreendente é a pequena lista, conforme **Tabela 7**.
+
+
+**Tabela 7** Arrecadação brasileira na Forbes
+```{r}
+forbes |> 
+  filter(nacionalidade == "Brazil", ano  <= 2020) |>
+  select (Atleta = nome, `Arrecadação (M)`= arrec_ano, Ano = ano) |> 
+  slice_max(order_by = `Arrecadação (M)`, n = 10) |>
+  kable()
+```
+
+*Arrecadação em milhões de dolares por ano*
+
+Nesta lista podemos destacar o saudoso piloto de Formula 1, **`r forbes |> filter(esporte == "Automobilismo",  nacionalidade== "Brazil", ano == 1990)  |>  select(nome)`**.
+
+![](https://i0.wp.com/gamehall.com.br/wp-content/uploads/2021/09/horizon-chase-turbo-ayrton-senna.jpg?resize=780%2C470&ssl=1)
+
+Foto do site <a href="https://i0.wp.com/gamehall.com.br/wp-content/uploads/2021/09/horizon-chase-turbo-ayrton-senna.jpg?resize=780%2C470&ssl=p"> i0.wp.com/gamehall.com.br </a>
+
+
+
+**Gráfico 6**. Soma de faturamento de atletas brasileiros na lista da forbes
+
+```{r}
+g2 <- forbes |> 
+  filter(nacionalidade == "Brazil", ano  <= 2020) |>
+  select(nome, arrec_ano) |> 
+  group_by(nome) |> 
+  summarize(sum(arrec_ano)) |> 
+  slice_max(order_by = `sum(arrec_ano)`, n =3) |> 
+  ggplot()+
+  aes(x= nome, y=`sum(arrec_ano)`, fill= nome, colours(distinct = "green" )) +
+  geom_col()+ 
+  scale_y_continuous(
+  breaks = seq(0,4000,400),
+  labels = paste(seq(0,4000,400), "M"))+
+   labs(x= " Atletas ",
+       y= "Arrecadação (M)",
+       subtitle = "Arrecadação somada dos 3 principais atletas brasileiros")+
+  labs(title = "Arrecadação somada de atletas brasileiros na forbes", hjust = 1)+
+  scale_fill_viridis_d()+
+  theme_classic()+
+  theme(legend.title=element_blank(), axis.text.x = element_blank())
+  ggbackground(g2, "canva.png")
+
+```
+
+*Arrecadação em milhões de dólares por ano*
+
+Fechando este pódio podemos destacar os dois astros do futebol, mostrando que pelo menos para a Forbes somos o país do futebol.
+
+![](https://a.espncdn.com/combiner/i?img=%2Fphoto%2F2021%2F0404%2Fr836085_1296x729_16%2D9.jpg&w=570&format=jpg) 
+
+Foto do site <a href="https://i0.wp.com/gamehall.com.br/wp-content/uploads/2021/09/horizon-chase-turbo-ayrton-senna.jpg?resize=780%2C470&ssl=p"> ESPN </a>
+
+
+## **O futuro da Lista Forbes**
+
+A cultura educacional e desportiva americana proporciona a seus atletas inclusão em grande e lucrativas ligas, trazendo grandes retornos financeiros, mas é claro que os shows e eventos que produzem em torno das suas competições favorecem esses lucros e esta brutal diferença com relação aos outros países citados nesta lista, por este motivo dificilmente veremos uma mudança neste pódio na próxima década.
+Entretanto, o Brasil deve analisar este retorno econômico e social da cultura educacional e desportiva americana que inclui os seus alunos/atletas nas diversas ligas nacionais e mundiais, mas principalmente que une esporte e educação.
+
+**A mudança social passa pela educação, mas também pelo esporte.**
+
+
+
+
+

@@ -1,0 +1,408 @@
+---
+title: "Xenarthras who?"
+author: "Ana Yoko Ykeuti Meiga"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+documentclass: book
+link-citations: yes
+output:
+  rmdformats::downcute:
+    use_bookdown: true
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+bibliography: library.bib
+---
+
+```{r echo=FALSE, fig.align='center', message=FALSE, warning=FALSE}
+knitr::include_graphics("https://pbs.twimg.com/media/EX8FwW1WAAkaTFc?format=jpg&name=small")
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(plotly)
+library(ggtext)
+library(kableExtra)
+library(tidyverse)
+
+BD <- read_csv(file = "NEOTROPICAL_XENARTHRANS_QUALITATIVE.csv")
+
+BD_sp <- BD |> 
+  filter(!str_detect(SPECIES, "sp.")) |> 
+  mutate(SUBORDER = case_when(FAMILY %in% c("Bradypodidae", "Megalonychidae", "Megatheriidae", "Mylodontidae") ~ "Folivora",
+                              FAMILY %in% c("Cyclopedidae", "Myrmecophagidae") ~ "Vermilingua"))
+```
+
+# Goal
+
+The main goal of this project is to practice R programming, but it is also to present who the Xenarthras are. As a gift (for myself) I also decided to practice English, taking advantage of the fact that the database was in English.
+
+# Introduction
+
+Xenarthra is a superorder of mammals that includes three larger groups: sloths, anteaters and armadillos. Sloths belong to the Pilosa Order, suborder Folivora, and there are only two groups that are not extinct, the three toed sloth (family Bradypodidae) and the two toed sloth (Family Megalonychidae). Sloths are famous for their slow movements and uncanny ability to hide in the tree canopy. All extant sloths feed on plants [@ICMBio2015]. Anteaters are also members of Pilosa Order, suborder Vermilingua, with two families: Myrmecophagidae and Cyclopedidae. Their most prominent feature is a long snout and a long, prehensile tongue that helps them capture ants and termites [@ICMBio2015].
+The armadillos are included on Cingulata Order, and they can be easily identified by the bony armor that covers their head, body, and tail [@Reis2011; @Trujillo2013]. The extensive degradation of habitats throughout South and Central America has caused large declines in virtually every Xenarthran population [@ICMBio2015].
+
+# Method
+
+The analysis of this project was carried out using a database from the article "Neotropical Xenarthra: a data set of occurrence of Xenarthran species in the Neotropics" [@Santos2019]. The information derived from several researchers and the compilation of data from distinct studies in different countries. This database is available in the link below:
+<https://github.com/LEEClab/Neotropical_Xenarthra>
+
+## Study site
+
+The compilation of the Xenarthrans database came from 22 countries. The five countries that contributed the most with data are listed on the Table \@ref(tab:countries).
+
+```{r countries, echo=FALSE, message=FALSE, warning=FALSE}
+BD |> 
+  count(COUNTRY) |> 
+  arrange(desc(n)) |> 
+  mutate(COUNTRY = str_to_title(COUNTRY),
+         abbr_country = case_when(COUNTRY == "Brazil" ~ "br",
+                                  COUNTRY == "Argentina" ~ "ar",
+                                  COUNTRY == "Bolivia" ~ "bo",
+                                  COUNTRY == "Mexico" ~ "mx",
+                                  COUNTRY == "Uruguay" ~ "uy"),
+         Flag = sprintf('![](http://flagpedia.net/data/flags/mini/%s.png)',
+                        abbr_country),
+         freq = formattable::percent(n / sum(n), digits = 1)) |>
+  select(-abbr_country) |> 
+  relocate(Flag, .after = COUNTRY) |> 
+  rename(Country = COUNTRY, Ocurrence = n, Frequency = freq) |> 
+  slice_head(n = 5) |> 
+  kbl(format.args = list(big.mark = ","),
+      caption = "Countries that contributed the most with Xenarthrans data.") |> 
+  kable_styling() |> 
+  kable_material(html_font = "Raleway")
+```
+
+# Results
+
+```{r echo=FALSE, fig.align='center', message=FALSE, warning=FALSE}
+knitr::include_graphics("../img/xenarthra.webp")
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+
+n_BD <- scales::number(nrow(BD), big.mark = ".", decimal.mark = ",")
+
+n_BD_sp <- scales::number(nrow(BD_sp), big.mark = ".", decimal.mark = ",")
+
+nrow(count(BD_sp, ORDER))
+
+nrow(count(BD_sp, FAMILY))
+```
+
+## Explanatory data
+
+Considering the Xenarthrans database, we can see a total of `r n_BD` occurrences. Observations that did not achieve precise specie identification were not considered in the analysis. Therefore, the total occurrence data was `r n_BD_sp`. The `r nrow(count(BD, ORDER))` existing orders were observed with a total of 5 families. The armadillos families
+were the most observed (Chlamyphoridae and Dasypodidae). In Figure \@ref(fig:family) you can verify the number of occurrence by hovering over the column chart below.
+
+```{r family, echo = FALSE, fig.align = "center", warning = FALSE, fig.cap="Number of occurrences by Family."}
+BD_familia <- BD_sp |>  
+  count(FAMILY) |> 
+  mutate(
+    FAMILY = fct_rev(fct_reorder(FAMILY, n))
+  ) |> 
+  ggplot() +
+  geom_col(aes(x = FAMILY, y = n),
+           alpha = 0.8) +
+  scale_y_continuous(
+    breaks = seq(from = 0, to = 14000, by = 2000), 
+    expand = expansion(mult = c(0,0)),
+    limits =  c(0, 14000),
+    labels = scales::label_number(big.mark = ",")
+  ) +
+  labs(x = "Family", y = "Ocurrence") +
+  theme(axis.title.x = element_text(face = "bold"),
+        axis.title.y = element_text(face = "bold"))
+ggplotly(BD_familia)
+```
+
+The species with the highest number of records were the nine-banded armadillo (*Dasypus novemcinctus*), with 10,340 occurrences (27.0%) (Table \@ref(tab:listocurr)). The second species most visualized was the six-banded armadillo (*Euphractus sexcinctus*). Both species belong to Cingulata Order. The giant armadillo (*Priodontes maximus*), also between the most recorded species (4.0%), is the largest of all extant armadillo species [@Trujillo2013].
+
+```{r listocurr, echo=FALSE, message=FALSE, warning=FALSE}
+BD |> 
+  filter(!str_detect(SPECIES, " sp.")) |> 
+  count(SPECIES) |> 
+  arrange(desc(n)) |> 
+  mutate(SPECIES = str_c("_", SPECIES, "_"),
+         freq = formattable::percent(n / sum(n), digits = 1)) |>
+  rename(Species = SPECIES, Ocurrence = n, Frequency = freq) |>
+  slice_head(n = 5) |> 
+  kbl(format.args = list(big.mark = ","),
+      caption = "Species with the greatest number of ocurrencce.") |>
+  kable_styling(full_width = FALSE) |> 
+  kable_material(html_font = "Raleway")
+```
+
+The database showed that Brazil is the country with the highest richness, presenting 20 different species of Xenarthrans, listed in Table \@ref(tab:rich). Argentina, Bolivia, Paraguay and Colombia are also countries that showed elevated richness of species.
+
+```{r rich, echo=FALSE, message=FALSE, warning=FALSE}
+BD_resumo <- BD |> 
+  filter(!str_detect(SPECIES, "sp.")) |> 
+  select(DATA_TYPE, SPECIES, GENUS, FAMILY, ORDER, IUCN_STATUS, SITE, STATE, COUNTRY, Annual_rainfall, Annual_temperature) 
+
+# Registros de sp por país ----
+tabela_pais_sp <- BD_resumo |> 
+  distinct(SPECIES, COUNTRY) |> 
+  count(COUNTRY, sort = TRUE, name = "RICHNESS")
+
+# Data frame organizado por país e número de espécies por país ------
+BD_resumo |> 
+  distinct(SPECIES, COUNTRY) |>
+  arrange(SPECIES) |> 
+  group_by(COUNTRY) |>  
+  mutate(SPECIES = str_c("_", SPECIES, "_"), 
+         SP = paste(SPECIES, collapse = ', ')) |> 
+  distinct(COUNTRY, SP) |> 
+  left_join(tabela_pais_sp) |> 
+  relocate(RICHNESS, .before = SP) |>
+  mutate(COUNTRY = str_to_title(COUNTRY),
+         abbr_country = case_when(COUNTRY == "Brazil" ~ "br",
+                                  COUNTRY == "Argentina" ~ "ar",
+                                  COUNTRY == "Bolivia" ~ "bo",
+                                  COUNTRY == "Mexico" ~ "mx",
+                                  COUNTRY == "Uruguay" ~ "uy",
+                                  COUNTRY == "Paraguay" ~ "py",
+                                  COUNTRY == "Colombia" ~ "co"),
+         Flag = sprintf('![](http://flagpedia.net/data/flags/mini/%s.png)',
+                        abbr_country)) |> 
+  select(-abbr_country) |> 
+  relocate(Flag, .after = COUNTRY) |> 
+  rename(Country = COUNTRY, Richness = RICHNESS, Species = SP) |>
+  arrange(desc(Richness)) |>
+  head(5) |> 
+  kable(caption = "Table 3. Countries with the highest richness of species.") 
+```
+
+## Endemic species
+
+Endemic species are those that exist only in one geographic region and do not occur naturally in any other part of the world. Species can be endemic to large or small areas of the earth, for example, an island, state, nation, country or other defined zone. Within the database, we can see some endemic species and the country of occurrence (Table \@ref(tab:endemic). In Argentina, there are two endemic armadillos species (*Chlamyphorus truncatus* and *Dasypus mazzai*). One sloth (*Bradypus torquatus*) and one armadillo occur only in Brazil and one sloth (*Bradypus pygmaeus*) is endemic to Panama. The endemism information was verified and the cited species are in fact endemic to that countries [@IUCN-InternationalUnionforConservationofNature2021].
+
+```{r endemic, echo=FALSE, message=FALSE, warning=FALSE}
+tabela_pais_sp <- BD_resumo |> 
+  distinct(SPECIES, COUNTRY) |> 
+  count(SPECIES, sort = TRUE, name = "N_COUNTRIES")
+#arrange(desc(n))
+
+BD_resumo |> 
+  distinct(SPECIES, COUNTRY) |>
+  arrange(COUNTRY) |> 
+  group_by(SPECIES) |>  
+  mutate(newcol = paste(COUNTRY, collapse = ', ')) |> 
+  distinct(SPECIES, newcol) |> 
+  rename(COUNTRY = newcol) |> 
+  left_join(tabela_pais_sp) |> 
+  mutate(SPECIES = str_c("_", SPECIES, "_"),
+         COUNTRY = str_to_title(COUNTRY),
+         abbr_country = case_when(COUNTRY == "Brazil" ~ "br",
+                                  COUNTRY == "Argentina" ~ "ar",
+                                  COUNTRY == "Panama" ~ "pa"),
+         Flag = sprintf('![](http://flagpedia.net/data/flags/mini/%s.png)',
+                        abbr_country)) |> 
+  select(-abbr_country) |> 
+  relocate(Flag, .after = COUNTRY)|> 
+  rename(Species = SPECIES, Country = COUNTRY) |> 
+  filter(N_COUNTRIES == 1) |> 
+  select(-N_COUNTRIES) |> 
+  kable(caption = "Endemic species.")
+```
+
+## Endangered species
+
+Convertion of habitats into cropland and pastures and hunting are the main threats to Xenarthras. There is one specie that is considered as "Critically endangered" (*Bradypus pygmaeus*), and four species classified as "Vulnerable", as we can see in Figure \@ref(fig:endangered).
+
+```{r endangered, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Threat status of Xenarthras species"}
+BD_ameaca <- BD_sp |> 
+  filter(IUCN_STATUS %in% c("VU", "CR", "EN")) |>
+  mutate(ORDER = case_when(ORDER == "Cingulata" & SPECIES == "Myrmecophaga tridactyla" ~ "Pilosa",
+                           TRUE ~ ORDER)) |> 
+  count(SPECIES, FAMILY, ORDER, IUCN_STATUS) |> 
+  arrange(SPECIES, ORDER)
+
+# Gráfico das espécies ameaçadas
+BD_ameaca |> 
+  mutate(
+    SPECIES = forcats::fct_reorder(SPECIES, n),
+    IUCN_STATUS = case_when(IUCN_STATUS == "CR" ~ "Critically",
+                            IUCN_STATUS == "VU" ~ "Vulnerable")
+  ) |> 
+  ggplot(aes(x = SPECIES, y = n)) +
+  geom_col(
+    aes(fill = IUCN_STATUS),
+    width = 0.7,
+    alpha = 0.9
+  ) +
+  geom_label(
+    aes(label = scales::comma(n)),
+    size = 3
+  ) + 
+  scale_y_continuous(
+    limits = c(1, 10000),
+    expand = expansion(mult = c(0, 0)),
+    trans = "log10",
+    labels = scales::label_number(big.mark = ",")
+  ) +
+  labs(
+    y = "Occurrence (log_10_)",
+    x = "Specie",
+    title = "Endangered species",
+    fill = "IUCN status",
+    caption = "Fonte: github.com/LEEClab"
+  ) +
+  ggthemr::ggthemr("pale")$theme +
+  theme(
+    legend.position = "bottom",
+    axis.title.y = element_markdown(face = "bold"),
+    axis.title.x = element_text(face = "bold"),
+    axis.text.x = element_text(face = "italic",
+                               angle = 45,
+                               hjust = 1),
+    panel.grid.major.x = element_blank() 
+  )
+```
+
+## Temperature x Rainfall
+
+To verify if the mean annual temperature and accumulated rainfall influence the occurrence of the species, the data were organized by suborder, sorting out sloths from anteaters and by order of armadillos.
+
+### Suborder Folivora
+
+The suborder Folivora is represented by sloths. The scatter plot shows that the species *Bradypus torquatus* and *B. variegatus* occur in areas with greater variation in temperature and rainfall while *B. tridactylus*, *Choloepus didactylus* and *C. hoffmanni* occur in warmer temperatures (Figure \@ref(fig:temp)).
+
+```{r temp, echo=FALSE, message=FALSE, warning=FALSE,fig.height=4.5, fig.cap="Ocurrence of Folivora  species according with the mean annual temperature and accumulated rainfall"}
+BD_sp |>
+  filter(COUNTRY == "BRAZIL",
+         SUBORDER == "Folivora",
+         Annual_rainfall > 0,
+         Olsoneconame != "Patagonian steppe") |>
+  arrange(Annual_rainfall) |>
+  ggplot() +
+  geom_point(aes(
+    x = Annual_rainfall,
+    y = Annual_temperature,
+    color = FAMILY),
+    alpha = 0.6) +
+  facet_grid(. ~ SPECIES) +
+  scale_x_continuous(
+    labels = scales::label_number(big.mark = ",")
+  ) +
+  ggthemr::ggthemr("pale")$theme +
+  labs(
+    y = "Temperature (°C)",
+    x = "Rainfall (mm)",
+    title = "Mean annual temperature x Accumulated rainfall",
+    subtitle = "Suborder Folivora",
+    color = "Family",
+    caption = "Fonte: github.com/LEEClab"
+  ) +
+  theme_light() +
+  theme(
+    legend.position = "bottom",
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold"),
+    panel.grid = element_line(linetype = 2),
+    strip.text = element_text(face = "italic"),
+  )
+```
+
+### Suborder Vermilingua
+
+The suborder Folivora is represented by anteaters. Both species of anteater observed on database are more flexible about the rainfall, occurring in areas with variation on the accumulated rainfall and temperature (Figure \@ref(fig:temp2)).
+
+```{r temp2, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Ocurrence of Vermilingua species according with the mean annual temperature and accumulated rainfall"}
+BD_sp |>
+  filter(COUNTRY == "BRAZIL",
+         SUBORDER == "Vermilingua",
+         Annual_rainfall > 0,
+         Olsoneconame != "Patagonian steppe") |>
+  arrange(Annual_rainfall) |>
+  ggplot() +
+  geom_point(aes(
+    x = Annual_rainfall,
+    y = Annual_temperature,
+    color = FAMILY),
+    alpha = 0.4) +
+  facet_grid(. ~ SPECIES) +
+  scale_x_continuous(
+    labels = scales::label_number(big.mark = ",")
+  ) +
+  ggthemr::ggthemr("pale")$theme +
+  labs(
+    y = "Temperature (°C)",
+    x = "Rainfall (mm)",
+    title = "Mean annual temperature x Accumulated rainfall",
+    subtitle = "Suborder Vermilingua",
+    color = "Family",
+    caption = "Fonte: github.com/LEEClab"
+  ) +
+  theme_light() +
+  theme(
+    legend.position = "bottom",
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold"),
+    panel.grid = element_line(linetype = 2),
+    strip.text = element_text(face = "italic"),
+  )
+```
+
+### Order Cingulata
+
+The Order Cingulata is represented by armadillos. We can observe that most species are more flexible regarding the temperature and rainfall variation. Although it is noted that some species are specially restricted (Figure \@ref(fig:temp3)).
+
+```{r temp3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.cap="Ocurrence of Cingulata species according with the mean annual temperature and accumulated rainfall"}
+BD_sp |>
+  filter(COUNTRY == "BRAZIL",
+         ORDER == "Cingulata",
+         Annual_rainfall > 0,
+         Olsoneconame != "Patagonian steppe",
+         FAMILY != "Myrmecophagidae") |>
+  arrange(ORDER, FAMILY, SPECIES) |>
+  mutate(SPECIES = as_factor(SPECIES)) |>
+  ggplot() +
+  geom_point(aes(
+    x = Annual_rainfall,
+    y = Annual_temperature,
+    color = FAMILY),
+    alpha = 0.4) +
+  facet_wrap(. ~ SPECIES,
+             labeller = label_wrap_gen(width = 10)) +
+  scale_x_continuous(
+    labels = scales::label_number(big.mark = ",")
+  ) +
+  ggthemr::ggthemr("pale")$theme +
+  labs(
+    y = "Temperature (°C)",
+    x = "Rainfall (mm)",
+    title = "Mean annual temperature x Accumulated rainfall",
+    subtitle = "Order Cingulata",
+    color = "Family",
+    caption = "Fonte: github.com/LEEClab"
+  ) +
+  theme_light() +
+  theme(
+    legend.position = "bottom",
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold"),
+    panel.grid = element_line(linetype = 2),
+    strip.text = element_text(face = "italic"),
+  )
+```
+
+# Conclusion
+
+This is just a small part of the fascinating world of sloths, anteaters and armadillos! I hope it was interesting to know a little more about these animals. You can find more information about their biology, distribution, and conservation status, as well as the threats these charismatic animals are facing.
+
+# Extra consideration
+
+During the organization and analysis of the database to elaborate the present project, it was noticed two mistakes on data information. To avoid the incorrect information, to create the graphics and tables the data has been corrected.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::include_graphics("https://media2.giphy.com/media/lD76yTC5zxZPG/giphy.gif?cid=ecf05e47d5fhgg39m8br53y0bq9d86ewg3dsw44q0ptyi5sh&rid=giphy.gif&ct=g")
+```
+
+# References
