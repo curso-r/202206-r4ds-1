@@ -33,13 +33,13 @@ Fora do horário de aula ou monitoria:
 
 ## Scripts utilizados em aula
 
-| script                                                                                                                                  |
-| :-------------------------------------------------------------------------------------------------------------------------------------- |
-| [scripts/01-introducao-ao-R.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/01-introducao-ao-R.R)               |
-| [scripts/02-importacao.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/02-importacao.R)                         |
-| [scripts/03-2-valores-especiais-NA.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/03-2-valores-especiais-NA.R) |
-| [scripts/03-manipulacao.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/03-manipulacao.R)                       |
-| [scripts/04-ggplot2.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/04-ggplot2.R)                               |
+| script                                                                                                                              |
+| :---------------------------------------------------------------------------------------------------------------------------------- |
+| [scripts/01-introducao-ao-R.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/01-introducao-ao-R.R)           |
+| [scripts/02-importacao.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/02-importacao.R)                     |
+| [scripts/03-manipulacao.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/03-manipulacao.R)                   |
+| [scripts/04-valores-especiais-NA.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/04-valores-especiais-NA.R) |
+| [scripts/05-ggplot2.R](https://raw.githubusercontent.com/curso-r/202206-r4ds-1/main/scripts/05-ggplot2.R)                           |
 
 ## Práticas feitas em aula
 
@@ -95,8 +95,9 @@ Fora do horário de aula ou monitoria:
 
 ## Trabalhos finais premiados
 
-| pasta\_compactada |
-| :---------------- |
+| pasta\_compactada                                                                                                                          |
+| :----------------------------------------------------------------------------------------------------------------------------------------- |
+| [trabalhos\_premiados/Ana\_Yoko/library.bib](https://github.com/curso-r/202206-r4ds-1/raw/master/trabalhos_premiados/Ana_Yoko/library.bib) |
 
 ## Material extra
 
