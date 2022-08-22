@@ -20,6 +20,18 @@ Fora do horário de aula ou monitoria:
 
   - perguntas sobre R, principalmente as que envolverem código, deverão
     ser enviadas no [nosso fórum](https://discourse.curso-r.com/).
+    
+
+## Trabalhos finais premiados
+
+- Alexandre Santos:
+  - [Trabalho](https://rpubs.com/alexandre_santos_ef/sports_money)
+  - [Código](https://github.com/AlexandreStos/tcc_sci_1/tree/main/tcc_c1_ams) 
+  
+- Ana Yoko:
+  - [Trabalho](https://curso-r.github.io/202206-r4ds-1/trabalhos_premiados/Ana_Yoko/index.html)
+  - [Código](https://github.com/curso-r/202206-r4ds-1/tree/main/trabalhos_premiados/Ana_Yoko)   
+    
 
 ## Slides
 
@@ -92,12 +104,6 @@ Fora do horário de aula ou monitoria:
 |    2 | [\[OPCIONAL\] Para quem não fez o curso Introdução à programação com R: Exercícios de introdução ao R](https://acursor.shinyapps.io/intro-programacao_introducao/)       |
 |    2 | [\[OPCIONAL\] Para quem não fez o curso Introdução à programação com R: Exercícios de introdução aos dataframes](https://acursor.shinyapps.io/intro-programacao_tabelas) |
 |    3 | [Ler e fazer os exercícios — Testes lógicos](https://livro.curso-r.com/3-7-testes-l%C3%B3gicos.html)                                                                     |
-
-## Trabalhos finais premiados
-
-| pasta\_compactada                                                                                                                          |
-| :----------------------------------------------------------------------------------------------------------------------------------------- |
-| [trabalhos\_premiados/Ana\_Yoko/library.bib](https://github.com/curso-r/202206-r4ds-1/raw/master/trabalhos_premiados/Ana_Yoko/library.bib) |
 
 ## Material extra
 
